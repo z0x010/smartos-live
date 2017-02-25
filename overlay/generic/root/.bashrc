@@ -41,14 +41,13 @@ if [ "$PS1" ]; then
     if test -n "$ps1_headnode"; then
         ps1_headnode_is_primary=$(source /lib/sdc/config.sh; load_sdc_config;
             echo $CONFIG_headnode_is_primary)
+        test -n "$ps1_info" && ps1_info+=" "
         if test -z "${ps1_headnode_is_primary}"; then
-            ps1_info+=" hn"
-        elif test "$ps1_headnode_is_primary" -eq "true"; then
-            test -n "$ps1_info" && ps1_info+=" "
-            ps1_info+=" primary-hn"
-        else:
-            test -n "$ps1_info" && ps1_info+=" "
-            ps1_info+=" secondary-hn"
+            ps1_info+="hn"
+        elif test "$ps1_headnode_is_primary" = "true"; then
+            ps1_info+="primary-hn"
+        else
+            ps1_info+="secondary-hn"
         fi
     fi
     if test -n "${ps1_info}"; then
