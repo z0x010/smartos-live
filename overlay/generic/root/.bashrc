@@ -37,7 +37,7 @@ if [ "$PS1" ]; then
     if test -n "${DC_NAME}"; then
         ps1_info+="${DC_NAME}"
     fi
-    ps1_headnode=$(sysinfo -p | (grep "^Bootparam_headnode='true'" || true))
+    ps1_headnode=$(source /lib/sdc/config.sh; load_sdc_config; echo $headnode)
     if test -n "$ps1_headnode"; then
         ps1_headnode_is_primary=$(source /lib/sdc/config.sh; load_sdc_config;
             echo $CONFIG_headnode_is_primary)
