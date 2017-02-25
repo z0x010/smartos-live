@@ -5,7 +5,7 @@
 #
 
 #
-# Copyright (c) 2014, Joyent, Inc.
+# Copyright (c) 2017, Joyent, Inc.
 #
 
 if [ "$PS1" ]; then
@@ -28,15 +28,36 @@ if [ "$PS1" ]; then
     fi
     unset mt_output mt_tty
     shopt -s checkwinsize
+
+    ps1_info=
     if [[ -f /.dcinfo ]]; then
         . /.dcinfo
         DC_NAME="${SDC_DATACENTER_NAME}"
     fi
-    if [[ -n "${DC_NAME}" ]]; then
-       PS1="[\u@\h (${DC_NAME}) \w]\\$ "
+    if test -n "${DC_NAME}"; then
+        ps1_info+="${DC_NAME}"
+    fi
+    ps1_headnode=$(sysinfo -p | (grep "^Bootparam_headnode='true'" || true))
+    if test -n "$ps1_headnode"; then
+        ps1_headnode_is_primary=$(source /lib/sdc/config.sh; load_sdc_config;
+            echo $CONFIG_headnode_is_primary)
+        if test -z "${ps1_headnode_is_primary}"; then
+            ps1_info+=" hn"
+        elif test "$ps1_headnode_is_primary" -eq "true"; then
+            test -n "$ps1_info" && ps1_info+=" "
+            ps1_info+=" primary-hn"
+        else:
+            test -n "$ps1_info" && ps1_info+=" "
+            ps1_info+=" secondary-hn"
+        fi
+    fi
+    if test -n "${ps1_info}"; then
+       PS1="[\u@\h (${ps1_info}) \w]\\$ "
     else
        PS1="[\u@\h \w]\\$ "
     fi
+    unset ps1_info ps1_headnode_is_primary ps1_headnode
+
     alias ll='ls -lF'
     alias ls='ls --color=auto'
     [ -n "${SSH_CLIENT}" ] && export PROMPT_COMMAND='echo -ne "\033]0;${HOSTNAME} \007" && history -a'
